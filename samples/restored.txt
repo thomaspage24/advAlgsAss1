@@ -1,0 +1,22 @@
+ABABABA ABABABA ABABABA
+
+Hello hello hello hello hello.
+
+This is a test file for LZW compression.
+This is a test file for LZW compression.
+This is a test file for LZW compression.
+
+The quick brown fox jumps over the lazy dog.
+The quick brown fox jumps over the lazy dog.
+The quick brown fox jumps over the lazy dog.
+
+ABCABCABCABCABCABCABCABC
+XYZXYZXYZXYZXYZXYZXYZXYZ
+
+Compression works best when patterns repeat.
+Compression works best when patterns repeat.
+Compression works best when patterns repeat.
+
+1234512345123451234512345
+
+End of sample file.

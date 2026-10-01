@@ -1,0 +1,5 @@
+lzw
+tests_run
+.DS_Store
+*.lzw
+*-restored.*

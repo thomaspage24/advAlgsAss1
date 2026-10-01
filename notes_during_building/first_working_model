@@ -1,0 +1,131 @@
+Compression successful
+
+Original size:   551 bytes
+Compressed size: 592 bytes
+LZW codes:       294
+Bytes saved:      -41 bytes
+Compression ratio: 1.07:1
+Size reduction:    -7.44%
+
+this is interesting because my first working implementation seemed to have a larger file size than initially. 
+# LZW Build Notes
+
+## Initial build
+
+- C++
+- LZW compression + decompression working
+- Initial dictionary = 256 byte values
+- New dictionary entries start at code `256`
+- `compress()` returns `vector<int>`
+- `decompress()` rebuilds original data
+- Round trip working:
+  - `decompress(compress(input)) == input`
+- Tested with GoogleTest
+- Added file input/output
+- Added CLI
+- Custom `.lzw` file format
+- Current header: `LZW1`
+
+## Current file format
+
+- 4 byte header: `LZW1`
+- Each LZW code stored as fixed 16-bit / 2 byte value
+
+Rough format:
+
+```text
+LZW1 | code | code | code | ...
+       2B     2B     2B
+```
+
+## Initial compression test
+
+Sample file:
+
+```text
+Original:   551 bytes
+Compressed: 592 bytes
+```
+
+Difference:
+
+```text
++41 bytes
+```
+
+Size reduction:
+
+```text
+-7.44%
+```
+
+So first build is actually larger than original.
+
+## Why
+
+Main issue:
+
+- every LZW code currently uses 16 bits
+- early dictionary codes only need around 9 bits
+- small file also has header overhead
+
+Example:
+
+```text
+294 codes × 16 bits
+= 4704 bits
+= 588 bytes
+
++ 4 byte header
+= 592 bytes
+```
+
+So LZW algorithm works, but output storage is inefficient.
+
+## Next improvement
+
+Variable-width codes:
+
+```text
+0–511      -> 9 bits
+512–1023   -> 10 bits
+1024–2047  -> 11 bits
+...
+```
+
+Need:
+
+- bit writer
+- bit reader
+- new file format version, probably `LZW2`
+- test width transitions
+- compare compression stats before/ater 
+
+  ## Need
+
+- Bit writer
+  - Packs 9-bit, 10-bit, 11-bit etc. LZW codes into normal 8-bit file bytes
+  - Needed because variable-width codes do not line up neatly with bytes
+
+- Bit reader
+  - Reads the packed bytes back and reconstructs the original LZW codes
+  - Must stay in sync with the writer's current code width
+
+- Width tracking
+  - Start at 9 bits
+  - Move to 10 bits when dictionary reaches 512 entries
+  - Then 11 bits at 1024, etc.
+
+- New file format version
+  - Change header from `LZW1` to `LZW2`
+  - `LZW1` = fixed 16-bit codes
+  - `LZW2` = variable-width packed codes
+
+- More tests
+  - Test 9 -> 10 bit transition
+  - Test large repetitive files
+  - Test that compressed then decompressed file is identical
+
+- Compare stats
+  - Compare `LZW1` fixed 16-bit version against `LZW2`
+  - Check file size, compression ratio and percentage reduction

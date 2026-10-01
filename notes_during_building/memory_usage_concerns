@@ -1,0 +1,47 @@
+## Streaming / memory improvement
+
+### Initial design
+
+- Original implementation loaded the entire input file into a `std::string`
+- `compress()` then created the entire `vector<int>` of LZW codes in memory
+- Decompression similarly loaded all codes before producing the output
+
+Pipeline:
+
+input file
+-> full string in memory
+-> full vector of codes
+-> compressed file
+
+Problem:
+- memory usage grows with file size
+- okay for small files but poor design for very large files
+
+### Improved design
+
+Changed compression/decompression to stream data instead.
+
+Compression:
+
+input stream
+-> LZW dictionary
+-> individual codes
+-> BitWriter
+-> output file
+
+Decompression:
+
+compressed stream
+-> BitReader
+-> individual codes
+-> LZW dictionary
+-> output stream
+
+- File no longer needs to be loaded completely into memory
+- Dictionary state is preserved for the entire file
+- Important: do NOT compress independent chunks separately because that would reset the LZW dictionary and reduce compression efficiency
+- Memory usage is now mainly the LZW dictionary/current sequence rather than the complete input + complete code vector
+
+point:
+- Initial implementation was correct but not scalable
+- Refactored it after recognising that reading the whole file into memory was unnecessary

@@ -1,0 +1,71 @@
+## Findings
+
+- Initial LZW1 version stored every code using 16 bits
+- 551 byte sample became 592 bytes
+- Changed to variable-width encoding
+- Started codes at 9 bits
+- Width increases as dictionary grows
+- Large repetitive file:
+  - 415000 bytes original
+  - 12558 bytes compressed
+  - 33.05:1 ratio
+  - ~96.97% reduction
+- Repetitive input compresses extremely well
+- Need to test random/non-repetitive input
+
+### Random data
+
+- 100 KB random binary file
+- Compression increased file size by 35.38%
+- LZW relies on repeated sequences
+- Random data contains very little useful repetition
+- Dictionary grows without producing enough useful longer matches
+- Shows LZW is highly dependent on input structure
+
+## Normal text / lorem ipsum sample
+
+- Original size: `6833 bytes`
+- Compressed size: `3285 bytes`
+- LZW codes: `2422`
+- Bytes saved: `3548 bytes`
+- Compression ratio: `2.08:1`
+- Size reduction: `51.92%`
+- Decompressed file matched original with `cmp`
+
+Notes:
+- Much more realistic than the highly repetitive synthetic test
+- Still compresses well because normal prose contains repeated words, character sequences, spaces, punctuation patterns, etc.
+- Performance sits between repetitive text and random binary data
+
+## Source code sample
+
+Used `src/lzw.cpp` as the input file.
+
+- Original size: `1770 bytes`
+- Compressed size: `943 bytes`
+- LZW codes: `776`
+- Bytes saved: `827 bytes`
+- Compression ratio: `1.88:1`
+- Size reduction: `46.72%`
+- Decompressed file matched original with `cmp`
+
+Notes:
+- Source code also compresses fairly well
+- Repeated syntax and tokens help LZW
+- Examples include repeated keywords, braces, whitespace, `std::`, variable names, and common code structures
+
+## Random binary sample
+
+- Original size: `102400 bytes`
+- Compressed size: `138634 bytes`
+- LZW codes: `73267`
+- Bytes saved: `-36234 bytes`
+- Compression ratio: `0.74:1`
+- Size reduction: `-35.38%`
+- Decompressed file matched original with `cmp`
+
+Notes:
+- File became larger after compression
+- Random data contains very little repeated structure
+- LZW dictionary grows but entries are not reused often enough
+- Shows that LZW performance depends heavily on repetition in the input
